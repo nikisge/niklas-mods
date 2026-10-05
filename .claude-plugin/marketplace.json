@@ -4,7 +4,7 @@
     "name": "Niklas Hansen"
   },
   "metadata": {
-    "description": "Claude Code Mods aus dem YouTube-Video von Niklas Hansen: Arbeitsliste, Cache-Wächter, Snake, Peitsche."
+    "description": "Claude Code Mods aus dem YouTube-Video von Niklas Hansen: Arbeitsliste, Cache Watcher, Snake, Peitsche."
   },
   "plugins": [
     {
@@ -13,8 +13,8 @@
       "description": "Eigenes To-do-Feld neben dem Chat: Aufgaben einreihen, während Claude arbeitet, und live sehen, woran Claude gerade sitzt."
     },
     {
-      "name": "cache-waechter",
-      "source": "./cache-waechter",
+      "name": "cache-watcher",
+      "source": "./cache-watcher",
       "description": "Cache-Countdown, Kontext, 5-Stunden- und Wochenlimit über dem Prompt. Warnt mit Ton, bevor der Cache kalt wird."
     },
     {

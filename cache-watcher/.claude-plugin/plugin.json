@@ -1,0 +1,1 @@
+{ "name": "cache-watcher", "version": "0.2.1", "description": "Cache-Countdown, Kontext, 5-Stunden- und Wochenlimit über dem Prompt.", "author": { "name": "Niklas Hansen" }, "types": "./types/index.d.ts" }

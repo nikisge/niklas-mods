@@ -5,7 +5,7 @@ Vier Mods für Claude Code ab Version 2.1.287. Laufen im Terminal und im Code-Ta
 | Mod | Was er macht | Bedienung |
 |---|---|---|
 | **arbeitsliste** | Eigenes To-do-Feld neben dem Chat, getrennt von normalen Nachrichten. Du tippst Aufgaben rein, während Claude arbeitet, ohne es zu unterbrechen. Ist Claude fertig, nimmt es sich das nächste To-do selbst, eins pro Durchlauf. Oben siehst du live Claudes eigenen Plan mit Fortschrittsbalken. Bei Abbruch pausiert die Liste. | `/todo` springt ins To-do-Feld (tippen, Enter, Esc zurück zum Chat; Strg+X Tab springt wieder rein). Außerdem `/todo Aufgabe`, `/todo pause`, `/todo weiter`, `/todo leeren` |
-| **cache-waechter** | Eine Zeile über dem Prompt: wie lange der Prompt-Cache noch warm ist, Kontext, 5-Stunden- und Wochenlimit, API-Wert der Session. 5 Minuten bevor der Cache kalt wird: Ton, Hinweis und eine rote Warnzeile mit den Knöpfen **Warm halten** (schickt einen Mini-Prompt, der den Cache für eine weitere Stunde hält) und **Komprimieren**. | läuft von selbst. Cache-Dauer oben in `cache-waechter/hooks/register.tsx` (`CACHE_MINUTES`, Standard 60 für Abos; per API 5 eintragen) |
+| **cache-watcher** | Eine Zeile über dem Prompt: wie lange der Prompt-Cache noch warm ist, Kontext, 5-Stunden- und Wochenlimit, API-Wert der Session. 5 Minuten bevor der Cache kalt wird: Ton, Hinweis und eine rote Warnzeile mit den Knöpfen **Warm halten** (schickt einen Mini-Prompt, der den Cache für eine weitere Stunde hält) und **Komprimieren**. | läuft von selbst. Cache-Dauer oben in `cache-watcher/hooks/register.tsx` (`CACHE_MINUTES`, Standard 60 für Abos; per API 5 eintragen) |
 | **peitsche** | Spaß-Mod. `/peitsche` öffnet das Peitschen-Feld: Die Peitsche schwingt mit echter Physik und knallt bei schnellem Zug. Triffst du Clawd, während Claude arbeitet, zuckt er zusammen, der Spinner wird zu „Schuftet unter der Peitsche“ und Claude bekommt mit dem nächsten Tool-Ergebnis die Ansage, schneller zu machen. | `/peitsche`, dann **H** = zuschlagen, **W/A/S/D** = Hand bewegen. Mit Maus (Vollbild-Terminal): gedrückt halten und schwingen |
 | **snake** | Snake spielen, während Claude arbeitet. Pausiert von selbst, sobald Claude fertig ist, damit du nichts verpasst. Rekord bleibt gespeichert. | `/snake`, dann **W/A/S/D** steuern, **P** Pause, **N** neu. Schließen: **Esc**, **Q** oder nochmal `/snake`; geht von selbst zu, wenn Claude fertig ist |
 
@@ -14,7 +14,7 @@ Vier Mods für Claude Code ab Version 2.1.287. Laufen im Terminal und im Code-Ta
 ```bash
 claude plugin marketplace add nikisge/niklas-mods
 claude plugin install arbeitsliste@niklas-mods --scope user
-claude plugin install cache-waechter@niklas-mods --scope user
+claude plugin install cache-watcher@niklas-mods --scope user
 claude plugin install peitsche@niklas-mods --scope user
 claude plugin install snake@niklas-mods --scope user
 ```

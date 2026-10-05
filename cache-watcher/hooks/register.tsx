@@ -1,10 +1,10 @@
-// Cache-Wächter: eine Zeile über dem Prompt mit allem, was Geld und Limits kostet.
+// Cache Watcher: eine Zeile über dem Prompt mit allem, was Geld und Limits kostet.
 // Wie lange der Prompt-Cache noch warm ist, wie voll der Kontext ist, wo die
 // 5-Stunden- und Wochenlimits stehen, und was die Session bisher gekostet hat.
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { CacheWaechterLimit, CacheWaechterReading } from '../types'
+import type { CacheWatcherLimit, CacheWatcherReading } from '../types'
 
 // Claude Code hält den Prompt-Cache bei Abos eine Stunde warm. Wer per API mit
 // 5 Minuten arbeitet, stellt hier 5 ein.
@@ -12,10 +12,10 @@ const CACHE_MINUTES = 60
 const WARN_MINUTES = 5
 const TICK_MS = 15_000
 
-const reading = atom({ plugin: 'cache-waechter', key: 'reading' } as const, null as CacheWaechterReading | null)
-const lastReplyAt = atom({ plugin: 'cache-waechter', key: 'lastReplyAt' } as const, null as number | null)
-const now = atom({ plugin: 'cache-waechter', key: 'now' } as const, 0)
-const isWorking = atom({ plugin: 'cache-waechter', key: 'isWorking' } as const, false)
+const reading = atom({ plugin: 'cache-watcher', key: 'reading' } as const, null as CacheWatcherReading | null)
+const lastReplyAt = atom({ plugin: 'cache-watcher', key: 'lastReplyAt' } as const, null as number | null)
+const now = atom({ plugin: 'cache-watcher', key: 'now' } as const, 0)
+const isWorking = atom({ plugin: 'cache-watcher', key: 'isWorking' } as const, false)
 
 // Ein kurzer Prompt, der den Cache für eine weitere Stunde warm hält: liest den
 // ganzen Chat zum Cache-Preis (10 %) und kostet sonst fast nichts.
@@ -34,7 +34,7 @@ async function warn($: EngineInterface, left: number): Promise<void> {
   })
 }
 
-function limitOf(kind: string, limits: { kind: string; percentUsed: number; resetsAt?: string }[]): CacheWaechterLimit | null {
+function limitOf(kind: string, limits: { kind: string; percentUsed: number; resetsAt?: string }[]): CacheWatcherLimit | null {
   const found = limits.find(one => one.kind === kind)
   if (!found) return null
   const at = found.resetsAt ? Date.parse(found.resetsAt) : NaN
@@ -45,7 +45,7 @@ async function takeReading($: EngineInterface): Promise<void> {
   const usage = await $.session.usage()
   const tokens = usage.context.tokens ?? 0
   const window = usage.context.window
-  const next: CacheWaechterReading = {
+  const next: CacheWatcherReading = {
     contextTokens: tokens,
     window,
     contextPercent: usage.context.percent ?? (window ? Math.round((tokens / window) * 100) : 0),

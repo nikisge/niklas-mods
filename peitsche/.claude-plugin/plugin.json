@@ -1,0 +1,1 @@
+{ "name": "peitsche", "version": "0.3.0", "description": "/peitsche: Peitschen-Feld mit Maus-Peitsche, Treffer auf Clawd lassen Claude zügiger arbeiten. Reiner Spaß.", "author": { "name": "Niklas Hansen" }, "types": "./types/index.d.ts" }

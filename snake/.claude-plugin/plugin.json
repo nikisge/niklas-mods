@@ -1,0 +1,1 @@
+{ "name": "snake", "version": "0.3.0", "description": "/snake: Snake spielen, während Claude arbeitet. Pausiert von selbst, sobald Claude fertig ist.", "author": { "name": "Niklas Hansen" }, "types": "./types/index.d.ts" }

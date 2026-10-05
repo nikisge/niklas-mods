@@ -1,0 +1,31 @@
+{
+  "name": "niklas-mods",
+  "owner": {
+    "name": "Niklas Hansen"
+  },
+  "metadata": {
+    "description": "Claude Code Mods aus dem YouTube-Video von Niklas Hansen: Arbeitsliste, Cache-Wächter, Snake, Peitsche."
+  },
+  "plugins": [
+    {
+      "name": "arbeitsliste",
+      "source": "./arbeitsliste",
+      "description": "Eigenes To-do-Feld neben dem Chat: Aufgaben einreihen, während Claude arbeitet, und live sehen, woran Claude gerade sitzt."
+    },
+    {
+      "name": "cache-waechter",
+      "source": "./cache-waechter",
+      "description": "Cache-Countdown, Kontext, 5-Stunden- und Wochenlimit über dem Prompt. Warnt mit Ton, bevor der Cache kalt wird."
+    },
+    {
+      "name": "peitsche",
+      "source": "./peitsche",
+      "description": "/peitsche: Peitschen-Feld mit Maus-Peitsche, Treffer auf Clawd lassen Claude zügiger arbeiten. Reiner Spaß."
+    },
+    {
+      "name": "snake",
+      "source": "./snake",
+      "description": "/snake: Snake spielen, während Claude arbeitet. Pausiert von selbst, sobald Claude fertig ist."
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{ "name": "arbeitsliste", "version": "0.4.0", "description": "Eigenes To-do-Feld neben dem Chat: Aufgaben einreihen, während Claude arbeitet, und live sehen, was Claude gerade abarbeitet.", "author": { "name": "Niklas Hansen" }, "types": "./types/index.d.ts" }

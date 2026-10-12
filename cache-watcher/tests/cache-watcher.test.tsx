@@ -10,6 +10,7 @@ describe('cache-watcher', () => {
     const toasts: string[] = []
     const sounds: string[] = []
     const prompts: string[] = []
+    const commands: string[] = []
     mock.store(on)
     on('session.id', () => ({ value: 's1' }) as never)
     on('audio.play', ($, e) => {
@@ -19,6 +20,10 @@ describe('cache-watcher', () => {
     on('prompt.submit', ($, e) => {
       prompts.push(e.text)
       return { text: e.text }
+    })
+    on('command.run', ($, e) => {
+      commands.push(String((e as { command: string }).command))
+      return { text: '' } as never
     })
     on('ui.toast', ($, e) => {
       toasts.push(String((e as { text: string }).text))
@@ -78,8 +83,14 @@ describe('cache-watcher', () => {
     expect(await both.find({ type: 'Text', text: /warm, noch 4 min/ }), 'check 9').toBeDefined()
     other = false
 
+    // 60 Sekunden vor Ablauf wird genau einmal automatisch komprimiert.
+    expect(commands, 'noch nicht komprimiert').toEqual([])
+    await clock.advance(3 * 60_000 + 30_000)
+    expect(commands, 'check 10').toEqual(['compact'])
+
     // Nach einer Stunde: kalt.
-    await clock.advance(5 * 60_000)
+    await clock.advance(2 * 60_000)
+    expect(commands, 'nur einmal pro Cache-Fenster').toEqual(['compact'])
     expect((await ui.find({ type: 'Text', text: /kalt/ })), 'check 7').toBeDefined()
   })
 })

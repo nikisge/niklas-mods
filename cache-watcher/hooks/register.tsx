@@ -1,7 +1,6 @@
 // Cache Watcher: eine Zeile über dem Prompt mit allem, was Geld und Limits kostet.
 // Wie lange der Prompt-Cache noch warm ist, wie voll der Kontext ist, wo die
 // 5-Stunden- und Wochenlimits stehen, und was die Session bisher gekostet hat.
-import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { CacheWatcherLimit, CacheWatcherReading } from '../types'
@@ -10,12 +9,11 @@ import type { CacheWatcherLimit, CacheWatcherReading } from '../types'
 // 5 Minuten arbeitet, stellt hier 5 ein.
 const CACHE_MINUTES = 60
 const WARN_MINUTES = 5
+// So viele Sekunden vor Cache-Ablauf wird automatisch /compact ausgeführt (der alte
+// Kontext wird dabei noch zum Cache-Preis gelesen). 0 schaltet das Auto-Komprimieren ab.
+const AUTO_COMPACT_SECONDS = 60
 const TICK_MS = 15_000
 
-const reading = atom({ plugin: 'cache-watcher', key: 'reading' } as const, null as CacheWatcherReading | null)
-const lastReplyAt = atom({ plugin: 'cache-watcher', key: 'lastReplyAt' } as const, null as number | null)
-const now = atom({ plugin: 'cache-watcher', key: 'now' } as const, 0)
-const isWorking = atom({ plugin: 'cache-watcher', key: 'isWorking' } as const, false)
 
 // Ein kurzer Prompt, der den Cache für eine weitere Stunde warm hält: liest den
 // ganzen Chat zum Cache-Preis (10 %) und kostet sonst fast nichts.
@@ -41,7 +39,7 @@ function limitOf(kind: string, limits: { kind: string; percentUsed: number; rese
   return { percent: Math.round(found.percentUsed), resetsAt: Number.isNaN(at) ? null : at }
 }
 
-async function takeReading($: EngineInterface): Promise<void> {
+async function takeReading($: EngineInterface): Promise<CacheWatcherReading> {
   const usage = await $.session.usage()
   const tokens = usage.context.tokens ?? 0
   const window = usage.context.window
@@ -53,7 +51,7 @@ async function takeReading($: EngineInterface): Promise<void> {
     week: limitOf('seven_day', usage.rateLimits),
     usd: usage.cost?.usd ?? null,
   }
-  await update($, reading, () => next)
+  return next
 }
 
 function bar(percent: number, width: number): string {
@@ -75,28 +73,51 @@ function untilText(ms: number): string {
   return `${Math.floor(minutes / 60)} h ${minutes % 60} min`
 }
 
+// Zeichnet die Zeile neu. Nur Komfort: schlägt der Aufruf fehl, zeichnet die Engine
+// beim nächsten Anlass von selbst.
+function redraw($: EngineInterface): void {
+  try {
+    $.ui.invalidate('ui.render')
+  } catch {
+    // ignorieren
+  }
+}
+
 export const register: Register = on => {
+  // Zustand des Mods: einfache Variablen des Moduls, kein $.state.
+  let reading: CacheWatcherReading | null = null
+  let lastReplyAt: number | null = null
+  let now = 0
+  let isWorking = false
+
   // Damit die Warnung pro Cache-Fenster nur einmal kommt.
   let warnedFor: number | null = null
+  // Und das Auto-Komprimieren pro Cache-Fenster ebenfalls nur einmal.
+  let compactedFor: number | null = null
 
   on('session.start', async ($, e, next) => {
     const result = await next(e)
     const started = await $.clock.now()
-    await update($, now, () => started)
+    now = started
     const saved = (await $.store.get(await lastKey($))) as number | undefined
-    if (typeof saved === 'number') await update($, lastReplyAt, () => saved)
-    await takeReading($)
+    if (typeof saved === 'number') lastReplyAt = saved
+    reading = await takeReading($)
 
     $.clock.every(TICK_MS, () => {
       void (async () => {
         const t = await $.clock.now()
-        await update($, now, () => t)
-        const last = await read($, lastReplyAt)
-        if (last === null || (await read($, isWorking)) || warnedFor === last) return
+        now = t
+        redraw($)
+        const last = lastReplyAt
+        if (last === null || isWorking) return
         const left = last + CACHE_MINUTES * 60_000 - t
-        if (left > 0 && left <= WARN_MINUTES * 60_000) {
+        if (warnedFor !== last && left > 0 && left <= WARN_MINUTES * 60_000) {
           warnedFor = last
           await warn($, left)
+        }
+        if (AUTO_COMPACT_SECONDS > 0 && compactedFor !== last && left > 0 && left <= AUTO_COMPACT_SECONDS * 1000) {
+          compactedFor = last
+          await $.command.run({ command: 'compact' }).catch(() => undefined)
         }
       })()
     })
@@ -105,7 +126,8 @@ export const register: Register = on => {
 
   on('turn.start', async ($, e, next) => {
     const result = await next(e)
-    await update($, isWorking, () => true)
+    isWorking = true
+    redraw($)
     return result
   })
 
@@ -113,11 +135,12 @@ export const register: Register = on => {
     const result = await next(e)
     if (e.agentId) return result
     const t = await $.clock.now()
-    await update($, isWorking, () => false)
-    await update($, lastReplyAt, () => t)
+    isWorking = false
+    lastReplyAt = t
     await $.store.set(await lastKey($), t)
-    await update($, now, () => t)
-    await takeReading($)
+    now = t
+    reading = await takeReading($)
+    redraw($)
     return result
   })
 
@@ -128,10 +151,10 @@ export const register: Register = on => {
     if (e.props.hasSurvey) return below
 
     const { Box, Text, Button } = $.ui.resolve(e)
-    const r = await read($, reading)
-    const last = await read($, lastReplyAt)
-    const t = await read($, now)
-    const working = await read($, isWorking)
+    const r = reading
+    const last = lastReplyAt
+    const t = now
+    const working = isWorking
     const columns = e.props.bodyColumns
     const isNarrow = columns < 110
 
